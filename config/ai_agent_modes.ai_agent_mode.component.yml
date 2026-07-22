@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai_agents.ai_agent.canvas_ai_orchestrator
+    - ai_agents.ai_agent.canvas_component_agent
+  enforced:
+    module:
+      - ai_agent_modes
+id: component
+label: 'Create a component'
+description: 'Scope the assistant to only the Code Components / design-system component sub-agent.'
+weight: 3
+agent: canvas_ai_orchestrator
+sub_agents:
+  - canvas_component_agent
+system_prompt_addition: |-
+  You are in COMPONENT mode. Build or edit a single Code Component only. Use the provided component schema and its published, allowed prop values verbatim. Never invent prop names or enum values.
+surfaces: {  }

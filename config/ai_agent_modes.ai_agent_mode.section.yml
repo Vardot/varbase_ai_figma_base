@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai_agents.ai_agent.canvas_ai_orchestrator
+    - ai_agents.ai_agent.canvas_page_builder_agent
+  enforced:
+    module:
+      - ai_agent_modes
+id: section
+label: 'Add a section'
+description: 'Scope the assistant to the page builder sub-agent for building a single section.'
+weight: 2
+agent: canvas_ai_orchestrator
+sub_agents:
+  - canvas_page_builder_agent
+system_prompt_addition: |-
+  You are in SECTION mode. Build one self-contained section (a layout region with its components). Do not restructure the rest of the page.
+surfaces: {  }

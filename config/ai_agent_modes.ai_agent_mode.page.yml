@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai_agents.ai_agent.canvas_ai_orchestrator
+    - ai_agents.ai_agent.canvas_page_builder_agent
+    - ai_agents.ai_agent.canvas_component_agent
+  enforced:
+    module:
+      - ai_agent_modes
+id: page
+label: 'Build a full page'
+description: 'Scope the assistant to the page builder plus the component sub-agent.'
+weight: 1
+agent: canvas_ai_orchestrator
+sub_agents:
+  - canvas_page_builder_agent
+  - canvas_component_agent
+system_prompt_addition: |-
+  You are in PAGE mode. Assemble a page from existing components and sections. Only create a custom component when no existing component fits, and then use its exact published schema.
+surfaces: {  }

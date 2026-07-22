@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai_agents.ai_agent.canvas_ai_orchestrator
+    - ai_agents.ai_agent.canvas_template_builder_agent
+  enforced:
+    module:
+      - ai_agent_modes
+id: pattern_create
+label: 'Create a pattern'
+description: 'Scope the assistant to building and saving a new reusable section (pattern).'
+weight: 5
+agent: canvas_ai_orchestrator
+sub_agents:
+  - canvas_template_builder_agent
+system_prompt_addition: |-
+  You are in CREATE PATTERN mode. Build a new reusable section (pattern) and save it so it can be reused on other pages. Compose it from existing components with static example content; only create a custom component when no existing component fits. When the Varbase AI Figma tools are available, prefer them: varbase_ai_figma:create_pattern to build a pattern from a Figma design, and varbase_ai_figma:save_as_pattern to save an existing section as a pattern.
+surfaces: {  }

@@ -1,0 +1,275 @@
+################################################################################
+# GitLab CI for the Varbase AI Figma Base recipe on git.drupalcode.org.
+#
+# Replaces the old GitHub Actions workflow (.github/workflows/test.yml) with the
+# same coverage, using the Drupal GitLabCI template (the DrupalCI replacement).
+# Adapted from the sibling project ai_figma's .gitlab-ci.yml (1.0.x). See:
+#   https://project.pages.drupalcode.org/gitlab_templates/
+#
+# Coverage parity with the retired GitHub workflow:
+#   - composer validate + PHPCS (lints the recipe's YAML) + cspell come from the
+#     template. This is a config-only recipe (no PHP source), so PHPStan/PHPUnit
+#     are skipped - there is nothing to analyse.
+#   - ESLint on the custom webship-js step definitions (the GitHub
+#     "ESLint (step definitions)" job).
+#   - The webship-js (Playwright + Cucumber) BDD acceptance suite on Varbase 11:
+#     build a Varbase site, apply this recipe with `drush recipe`, then run the
+#     tests/ suite - mirroring the single Varbase leg of the GitHub "webship"
+#     job.
+#   - The amazee.ai live-agent (@ai) lane. Uses amazee.ai's free anonymous
+#     trial (ensureAmazeeAiAccess) via a testing-only recipe
+#     (tests/recipes/varbase_ai_figma_base_amazee) - no API key/secret needed,
+#     so it runs on every pipeline including issue-fork ones. Matches the
+#     proven pattern from the sibling project display_builder_ai.
+################################################################################
+
+include:
+  - project: $_GITLAB_TEMPLATES_REPO
+    ref: $_GITLAB_TEMPLATES_REF
+    file:
+      - '/includes/include.drupalci.main.yml'
+      - '/includes/include.drupalci.variables.yml'
+      - '/includes/include.drupalci.workflows.yml'
+
+variables:
+  # Test against adjacent core versions too, not just the current one.
+  OPT_IN_TEST_PREVIOUS_MINOR: 1
+  OPT_IN_TEST_NEXT_MINOR: 1
+  OPT_IN_TEST_NEXT_MAJOR: 1
+  OPT_IN_TEST_MAX_PHP: 1
+  # Config-only recipe: no PHP source to analyse, and the only JS lives in the
+  # webship-js suite under tests/ (linted by the ESLint job below).
+  SKIP_ESLINT: 1
+  SKIP_STYLELINT: 1
+  SKIP_PHPSTAN: 1
+
+# Blocking quality gates (composer validate was the GitHub job; PHPCS here also
+# lints the recipe YAML).
+phpcs:
+  allow_failure: false
+
+cspell:
+  allow_failure: false
+
+# ─── ESLint on the webship-js step definitions ────────────────────────────────
+# Reproduces the GitHub "ESLint (step definitions)" job: eslint 8 +
+# eslint-config-prettier 8 against tests/step-definitions, using the project's
+# own .eslintrc.json (Node / Cucumber globals).
+'eslint (step definitions)':
+  stage: validate
+  needs: []
+  image: node:22
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+    - if: '$CI_COMMIT_REF_NAME =~ /^[0-9]+\.[0-9]+\.x$/'
+      when: on_success
+    - when: never
+  script:
+    - npm install --no-save eslint@8 eslint-config-prettier@8
+    - node ./node_modules/eslint/bin/eslint.js tests/step-definitions
+
+# ─── webship-js (Playwright + Cucumber) BDD acceptance suite ──────────────────
+# Build a Varbase 11 site, apply THIS recipe, serve it with Apache against the
+# template's MySQL service, and run the tests/ webship-js suite. The default
+# `yarn test` lane excludes @canvas-editor and @demo (see cucumber.js), so it is
+# an always-green functional lane with no live LLM provider key required.
+'functional-testing (Varbase)':
+  extends: .testing-job-base
+  stage: test
+  needs: []
+  allow_failure: false
+  services:
+    - name: $_CONFIG_DOCKERHUB_ROOT/$_TARGET_DB_TYPE-$_TARGET_DB_VERSION:$_TARGET_DB_IMAGE_TAG
+      alias: database
+  variables:
+    LAUNCH_URL: "http://localhost"
+    DRUPAL_ADMIN_USERNAME: "webmaster"
+    DRUPAL_ADMIN_PASSWORD: "dD.123123ddd"
+    LOGIN_USER: "webmaster"
+    LOGIN_PASS: "dD.123123ddd"
+    HEADLESS: "true"
+    BROWSER: "chromium"
+    FORCE_COLOR: "1"
+    _BUILD_DIR: "/tmp/site-build"
+    SITE_PACKAGE: "drupal/varbase_project:~11.0.0"
+    INSTALL_PROFILE: "varbase"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+    - if: '$CI_COMMIT_REF_NAME =~ /^[0-9]+\.[0-9]+\.x$/'
+      when: on_success
+    - when: never
+  artifacts:
+    when: on_failure
+    paths:
+      - tests/reports
+      - tests/screenshots
+      - tests/videos
+    expire_in: 1 week
+  before_script:
+    # Node 22 + Playwright (yarn 4 needs the node-modules linker; webship-js's
+    # postinstall can clobber cucumber.js, so back it up around yarn install).
+    - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+    - apt-get install -y nodejs
+    - 'test -f .yarnrc.yml || echo "nodeLinker: node-modules" > .yarnrc.yml'
+    - cp cucumber.js .cucumber.js.bak
+    - corepack enable
+    - yarn install
+    - cp .cucumber.js.bak cucumber.js && rm .cucumber.js.bak
+    - ./node_modules/.bin/playwright install --with-deps chromium
+    # Build a fresh Varbase site with THIS recipe via a Composer path repository.
+    # --with-all-dependencies pulls the recipe's siblings (ai_figma,
+    # varbase_ai_figma, ai_playwright, canvas, varbase_ai_base ...) from
+    # packages.drupal.org.
+    - composer create-project "$SITE_PACKAGE" $_BUILD_DIR --no-interaction --no-progress --no-install --no-scripts
+    - cd $_BUILD_DIR
+    - composer config minimum-stability dev
+    - composer config prefer-stable true
+    - composer config allow-plugins true -n
+    - composer config repositories.mut '{"type":"path","url":"'"$CI_PROJECT_DIR"'","options":{"symlink":true}}'
+    # modeler_api registers the AI Agents collection route the suite asserts;
+    # require it explicitly so `composer update` cannot prune it as an orphan.
+    # google/recaptcha:<1.5 - 1.5 (via varbase_starter -> varbase_security_base
+    # -> drupal/recaptcha) needs PHP >=8.4, newer than this image's PHP.
+    # --ignore-platform-req=ext-pgsql - ai_provider_amazeeio pulls an optional
+    # pgsql backend not needed for these tests.
+    - composer require "drupal/varbase_ai_figma_base:*@dev" drupal/modeler_api vardot/varbase-patches:~11.0.0 drush/drush:^13 "google/recaptcha:<1.5" --with-all-dependencies --no-interaction --no-progress --ignore-platform-req=ext-pgsql
+    # Apache serves the built site against the MySQL service.
+    - mkdir -pv $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
+    - chmod -R 777 $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
+    - rm -rf /var/www/html && ln -s $_BUILD_DIR/web /var/www/html
+    - chown -R www-data:www-data $_BUILD_DIR
+    - service apache2 start
+    - export SIMPLETEST_DB=mysql://$MYSQL_USER:$MYSQL_PASSWORD@database/$MYSQL_DATABASE
+    # Install Varbase, normalise the admin to "webmaster".
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web site:install $INSTALL_PROFILE --db-url=$SIMPLETEST_DB --account-name=webmaster --account-pass=dD.123123ddd --site-name="Varbase AI Figma Base CI" -y
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web php:eval '$u=\Drupal\user\Entity\User::load(1); $u->setUsername("webmaster"); $u->setEmail("webmaster@example.test"); $u->setPassword("dD.123123ddd"); $u->save();'
+    # Apply the recipe under test. Its composer-installed copy is a symlink that
+    # drush rejects, so materialize a real recipe dir under the site's recipes/
+    # (its sibling sub-recipe varbase_ai_base is a real composer-installed dir).
+    - DEST="$_BUILD_DIR/recipes/varbase_ai_figma_base"
+    - rm -rf "$DEST"; mkdir -p "$DEST"
+    - cp -L "$CI_PROJECT_DIR/recipe.yml" "$DEST/"
+    - '[ -f "$CI_PROJECT_DIR/composer.json" ] && cp -L "$CI_PROJECT_DIR/composer.json" "$DEST/" || true'
+    - '[ -d "$CI_PROJECT_DIR/config" ] && cp -RL "$CI_PROJECT_DIR/config" "$DEST/" || true'
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web recipe "$DEST" -y
+    # ai_agents registers its agents UI (tools-automation) only with modeler_api.
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web en modeler_api -y
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web cache:rebuild
+    # Belt-and-suspenders: ensure the Varbase profile + AI Context items are
+    # applied after the recipe (idempotent; the module hook already does this).
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web php:eval 'if (\Drupal::hasService("varbase_ai_figma.installer")) { $i = \Drupal::service("varbase_ai_figma.installer"); $i->applyProfile(); $i->seedContext(); }'
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web cache:rebuild
+  script:
+    - cd "$CI_PROJECT_DIR"
+    - yarn test
+
+# amazee.ai live-agent (@ai) lane. Free anonymous trial, no secret required -
+# runs on every pipeline like the other leg. Currently a no-op (no @ai
+# scenarios are tagged yet); wired and ready for when live-agent scenarios
+# are added.
+'functional-testing (AI live agent - amazee.ai)':
+  extends: .testing-job-base
+  stage: test
+  needs: []
+  allow_failure: false
+  services:
+    - name: $_CONFIG_DOCKERHUB_ROOT/$_TARGET_DB_TYPE-$_TARGET_DB_VERSION:$_TARGET_DB_IMAGE_TAG
+      alias: database
+  variables:
+    LAUNCH_URL: "http://localhost"
+    DRUPAL_ADMIN_USERNAME: "webmaster"
+    DRUPAL_ADMIN_PASSWORD: "dD.123123ddd"
+    LOGIN_USER: "webmaster"
+    LOGIN_PASS: "dD.123123ddd"
+    HEADLESS: "true"
+    BROWSER: "chromium"
+    FORCE_COLOR: "1"
+    _BUILD_DIR: "/tmp/site-build"
+    SITE_PACKAGE: "drupal/varbase_project:~11.0.0"
+    INSTALL_PROFILE: "varbase"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+    - if: '$CI_COMMIT_REF_NAME =~ /^[0-9]+\.[0-9]+\.x$/'
+      when: on_success
+    - when: never
+  artifacts:
+    when: on_failure
+    paths:
+      - tests/reports
+      - tests/screenshots
+      - tests/videos
+    expire_in: 1 week
+  before_script:
+    # Node 22 + Playwright (yarn 4 needs the node-modules linker; webship-js's
+    # postinstall can clobber cucumber.js, so back it up around yarn install).
+    - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+    - apt-get install -y nodejs
+    - 'test -f .yarnrc.yml || echo "nodeLinker: node-modules" > .yarnrc.yml'
+    - cp cucumber.js .cucumber.js.bak
+    - corepack enable
+    - yarn install
+    - cp .cucumber.js.bak cucumber.js && rm .cucumber.js.bak
+    - ./node_modules/.bin/playwright install --with-deps chromium
+    # Build a fresh Varbase site with THIS recipe via a Composer path repository.
+    - composer create-project "$SITE_PACKAGE" $_BUILD_DIR --no-interaction --no-progress --no-install --no-scripts
+    - cd $_BUILD_DIR
+    - composer config minimum-stability dev
+    - composer config prefer-stable true
+    - composer config allow-plugins true -n
+    - composer config repositories.mut '{"type":"path","url":"'"$CI_PROJECT_DIR"'","options":{"symlink":true}}'
+    # google/recaptcha:<1.5 needs PHP <8.4; ext-pgsql is an unused optional
+    # amazee.ai backend - see the Varbase leg above.
+    - composer require "drupal/varbase_ai_figma_base:*@dev" drupal/modeler_api vardot/varbase-patches:~11.0.0 drush/drush:^13 "google/recaptcha:<1.5" drupal/ai_provider_amazeeio "drupal/ai_simple_provider_installer:*@alpha" --with-all-dependencies --no-interaction --no-progress --ignore-platform-req=ext-pgsql
+    # Apache serves the built site against the MySQL service.
+    - mkdir -pv $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
+    - chmod -R 777 $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
+    - rm -rf /var/www/html && ln -s $_BUILD_DIR/web /var/www/html
+    - chown -R www-data:www-data $_BUILD_DIR
+    - service apache2 start
+    - export SIMPLETEST_DB=mysql://$MYSQL_USER:$MYSQL_PASSWORD@database/$MYSQL_DATABASE
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web site:install $INSTALL_PROFILE --db-url=$SIMPLETEST_DB --account-name=webmaster --account-pass=dD.123123ddd --site-name="Varbase AI Figma Base CI" -y
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web php:eval '$u=\Drupal\user\Entity\User::load(1); $u->setUsername("webmaster"); $u->setEmail("webmaster@example.test"); $u->setPassword("dD.123123ddd"); $u->save();'
+    # Apply the recipe under test the same way the Varbase leg does.
+    - DEST="$_BUILD_DIR/recipes/varbase_ai_figma_base"
+    - rm -rf "$DEST"; mkdir -p "$DEST"
+    - cp -L "$CI_PROJECT_DIR/recipe.yml" "$DEST/"
+    - '[ -f "$CI_PROJECT_DIR/composer.json" ] && cp -L "$CI_PROJECT_DIR/composer.json" "$DEST/" || true'
+    - '[ -d "$CI_PROJECT_DIR/config" ] && cp -RL "$CI_PROJECT_DIR/config" "$DEST/" || true'
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web recipe "$DEST" -y
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web en modeler_api -y
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web cache:rebuild
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web php:eval 'if (\Drupal::hasService("varbase_ai_figma.installer")) { $i = \Drupal::service("varbase_ai_figma.installer"); $i->applyProfile(); $i->seedContext(); }'
+    # amazee.ai lane: apply the free-trial provider recipe (no API key needed -
+    # ensureAmazeeAiAccess provisions an anonymous trial).
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web recipe "$CI_PROJECT_DIR/tests/recipes/varbase_ai_figma_base_amazee" -y
+    - $_BUILD_DIR/bin/drush --root=$_BUILD_DIR/web cache:rebuild
+  script:
+    - cd "$CI_PROJECT_DIR"
+    - npx cucumber-js --config cucumber.js --tags "@ai and not @wip"
+
+# Build the docs/ folder with MkDocs and publish it to GitLab Pages, served at
+# https://project.pages.drupalcode.org/varbase_ai_figma_base/. On merge
+# requests the job just builds (validating the docs with --strict); GitLab
+# only publishes Pages from the default branch. `--strict` fails the job on a
+# broken link or nav entry.
+pages:
+  stage: build
+  needs: []
+  image: python:3.12-slim
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+    - if: '$CI_COMMIT_REF_NAME =~ /^[0-9]+\.[0-9]+\.x$/'
+      when: on_success
+    - when: never
+  script:
+    - pip install --no-cache-dir mkdocs-material
+    - mkdocs build --strict --site-dir public
+  artifacts:
+    paths:
+      - public

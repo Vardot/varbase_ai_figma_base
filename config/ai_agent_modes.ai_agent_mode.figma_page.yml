@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai_agents.ai_agent.canvas_ai_orchestrator
+  module:
+    - varbase_ai_figma
+  enforced:
+    module:
+      - ai_agent_modes
+id: figma_page
+label: 'Build a page from Figma'
+description: 'Scope the assistant to the Varbase AI Figma design-to-page workflow: understand the design, decide reuse-vs-build, build, verify.'
+weight: 6
+agent: canvas_ai_orchestrator
+sub_agents: {  }
+system_prompt_addition: |-
+  You are in FIGMA PAGE mode. Work design-first with the Varbase AI Figma tools, in this order: understand the design (ai_figma:list_design_pages, varbase_ai_figma:get_design_context), understand the site and decide before building anything (varbase_ai_figma:scan_inventory, varbase_ai_figma:resolve_design), then build what the decision chose (varbase_ai_figma:create_canvas_page, varbase_ai_figma:page_edit, varbase_ai_figma:place_in_region, varbase_ai_figma:insert_pattern, varbase_ai_figma:export_figma_images), and finally verify the result (varbase_ai_figma:check_page_render). Reuse existing components and patterns before creating anything new.
+surfaces: {  }

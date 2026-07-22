@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai_agents.ai_agent.canvas_ai_orchestrator
+  module:
+    - varbase_ai_figma
+  enforced:
+    module:
+      - ai_agent_modes
+id: page_review
+label: 'Review and improve a page'
+description: 'Scope the assistant to checking and improving an existing page: render check, audit, copy, alt text, meta, translation.'
+weight: 8
+agent: canvas_ai_orchestrator
+sub_agents: {  }
+system_prompt_addition: |-
+  You are in REVIEW mode. Check and improve an existing page using the Varbase AI Figma tools: varbase_ai_figma:check_page_render and varbase_ai_figma:audit_page to find problems, varbase_ai_figma:preview_token_url to share a preview, then varbase_ai_figma:improve_text, varbase_ai_figma:alt_text, varbase_ai_figma:meta_description, and varbase_ai_figma:translate_page to improve it. Do not restructure the page layout in this mode.
+surfaces: {  }

@@ -1,0 +1,106 @@
+name: 'Varbase AI Figma Base'
+type: 'Varbase AI'
+description: 'Base recipe for Varbase AI Figma. Applies the Varbase AI Base recipe (core AI modules + default Varbase AI configuration), then installs the general ai_figma engine and the Varbase AI Figma customization (Bootstrap 5.3 / vartheme_bs5 layouts, component choices, demo Figma file), and wires Context Control Center (ai_context). The Drupal Canvas AI Orchestrator is taught to RESOLVE a design against what the site already ships before it builds anything: it is given the inventory and design-resolver tools, plus the AI Context items that tell it to reuse an existing component, pattern, block or view before creating a new one, to bind the design to real prop names, and never to freeze live content into static markup. Everything the resolver reasons with - the content roles, what each signal is worth, the reuse/adapt/create thresholds, and what is never a candidate - lives in varbase_ai_figma.settings, so behaviour is tuned in config rather than in code. After apply, a Varbase site builds Canvas pages from a Figma link out of the box.'
+recipes:
+  - varbase_ai_base
+install:
+  - ai
+  - ai_agents
+  - scheduler
+  - ai_context
+  - key
+  - easy_encryption
+  - canvas_ai
+  - ai_figma
+  - varbase_ai_figma
+  - ai_agent_modes
+config:
+  strict: false
+  import:
+    ai_context: '*'
+    # The resolver's tuning (roles, weights, thresholds, exclusions) and the AI
+    # Context items varbase_ai_figma teaches the agent. Editing this config is
+    # how you change how the agent decides - no patch, no fork.
+    varbase_ai_figma: '*'
+    # ai_agent_modes ships no opinionated modes of its own; the Figma/Canvas
+    # curated modes (page, section, component, pattern, figma_page,
+    # page_review, pattern_create, site_connect) are this recipe's own
+    # opinion and live in this recipe's config/ directory.
+    ai_agent_modes: '*'
+  actions:
+    # Let somebody other than user 1 actually use this.
+    #
+    # None of these permissions were granted to any role, so on a real site the
+    # product was administrator-only: a Site Admin opening the Figma settings
+    # page got a 403, and a content editor could not open the AI panel in
+    # Canvas at all. User 1 bypasses every permission check, which is exactly
+    # why this went unnoticed.
+    user.role.site_admin:
+      grantPermissions:
+        - 'administer ai figma'
+        - 'use ai figma design context'
+        - 'use Drupal Canvas AI'
+    user.role.content_admin:
+      grantPermissions:
+        - 'use ai figma design context'
+        - 'use Drupal Canvas AI'
+    # Editors build pages; they need the AI panel, not the Figma token screen.
+    user.role.content_editor:
+      grantPermissions:
+        - 'use Drupal Canvas AI'
+    # The tools the Canvas AI Orchestrator is given, in the order it does the
+    # job. The module installer wires the same list; declaring it here as well
+    # means a site that gains the orchestrator only later ends up correctly
+    # wired by re-applying the recipe.
+    #
+    # This is a deliberately short list. Every other tool the module ships
+    # stays available at /admin/config/ai/agents for an administrator to switch
+    # on; it is just not handed to every site by default.
+    #
+    # CAREFUL: simpleConfigUpdate REPLACES the whole `tools` map, it does not
+    # merge into it. So every tool that must end up on the orchestrator has to
+    # be listed here - including the ones Drupal Canvas ships itself. Leaving
+    # them out silently deletes them, which takes the orchestrator's own page
+    # builder and component agents away and breaks Canvas AI. They are listed
+    # first, below, for exactly that reason.
+    ai_agents.ai_agent.canvas_ai_orchestrator:
+      simpleConfigUpdate:
+        tools:
+          # 0. Drupal Canvas's OWN agents. Not ours; we must not drop them.
+          'ai_agents::ai_agent::canvas_component_agent': true
+          'ai_agents::ai_agent::canvas_metadata_generation_agent': true
+          'ai_agents::ai_agent::canvas_page_builder_agent': true
+          'ai_agents::ai_agent::canvas_template_builder_agent': true
+          'ai_agents::ai_agent::canvas_title_generation_agent': true
+          'ai_agent:verify_task_completion': true
+          # 1. Understand the design.
+          'ai_figma:list_design_pages': true
+          'varbase_ai_figma:get_design_context': true
+          # 2. Understand the site, then decide. Nothing is built before this:
+          # scan_inventory shows what already exists (components with their real
+          # settings and choices, saved sections, blocks, lists), and
+          # resolve_design returns REUSE / ADAPT / BUILD, region by region.
+          'varbase_ai_figma:scan_inventory': true
+          'varbase_ai_figma:resolve_design': true
+          # 3. Build what the decision chose.
+          'varbase_ai_figma:create_canvas_page': true
+          'varbase_ai_figma:page_edit': true
+          'varbase_ai_figma:update_component_inputs': true
+          'varbase_ai_figma:place_in_region': true
+          'varbase_ai_figma:create_pattern': true
+          'varbase_ai_figma:save_as_pattern': true
+          'varbase_ai_figma:insert_pattern': true
+          'varbase_ai_figma:export_figma_images': true
+          # 4. Connect what was built to the rest of the site: the front page,
+          # the URL aliases, the menus, and the Webforms/Views a region needs.
+          'varbase_ai_figma:site_wiring': true
+          'varbase_ai_figma:menu_link': true
+          'varbase_ai_figma:apply_recipe': true
+          # 5. Check and improve what was built.
+          'varbase_ai_figma:preview_token_url': true
+          'varbase_ai_figma:check_page_render': true
+          'varbase_ai_figma:audit_page': true
+          'varbase_ai_figma:improve_text': true
+          'varbase_ai_figma:alt_text': true
+          'varbase_ai_figma:meta_description': true
+          'varbase_ai_figma:translate_page': true

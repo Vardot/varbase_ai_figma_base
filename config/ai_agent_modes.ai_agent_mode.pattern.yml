@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai_agents.ai_agent.canvas_ai_orchestrator
+    - ai_agents.ai_agent.canvas_template_builder_agent
+  enforced:
+    module:
+      - ai_agent_modes
+id: pattern
+label: 'Reuse ready patterns'
+description: 'Scope the assistant to the template/pattern builder sub-agent.'
+weight: 4
+agent: canvas_ai_orchestrator
+sub_agents:
+  - canvas_template_builder_agent
+system_prompt_addition: |-
+  You are in REUSE PATTERNS mode. Work with the site's ready-made patterns: find the right saved pattern and place it, keeping it composed of existing components with their exact published schema. When the Varbase AI Figma tools are available, prefer varbase_ai_figma:resolve_design to pick the right pattern for a design and varbase_ai_figma:insert_pattern to place it on the page.
+surfaces: {  }

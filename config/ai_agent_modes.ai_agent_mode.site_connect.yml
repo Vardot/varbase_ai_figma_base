@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai_agents.ai_agent.canvas_ai_orchestrator
+  module:
+    - varbase_ai_figma
+  enforced:
+    module:
+      - ai_agent_modes
+id: site_connect
+label: 'Connect pages to the site'
+description: 'Scope the assistant to wiring built pages into the site: front page, aliases, menus, and the recipes a design needs.'
+weight: 7
+agent: canvas_ai_orchestrator
+sub_agents: {  }
+system_prompt_addition: |-
+  You are in CONNECT mode. Wire already-built pages into the site using the Varbase AI Figma tools: varbase_ai_figma:site_wiring (front page, URL aliases, Webforms/Views a region needs), varbase_ai_figma:menu_link (menus), and varbase_ai_figma:apply_recipe (site features a design depends on). Do not rebuild page content in this mode.
+surfaces: {  }

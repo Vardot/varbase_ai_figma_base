@@ -1,0 +1,36 @@
+site_name: Varbase AI Figma Base
+site_description: >-
+  Base recipe for Varbase AI Figma - applies Varbase AI Base, installs
+  ai_figma + varbase_ai_figma + ai_playwright, and wires the Figma tools into
+  the Drupal Canvas AI Orchestrator.
+site_url: https://project.pages.drupalcode.org/varbase_ai_figma_base/
+repo_url: https://git.drupalcode.org/project/varbase_ai_figma_base
+repo_name: project/varbase_ai_figma_base
+docs_dir: docs
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Configuration: configuration.md
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
