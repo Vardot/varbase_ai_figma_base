@@ -1,8 +1,49 @@
 name: 'Varbase AI Figma Base'
 type: 'Varbase AI'
-description: 'Base recipe for Varbase AI Figma. Applies the Varbase AI Base recipe (core AI modules + default Varbase AI configuration), then installs the general ai_figma engine and the Varbase AI Figma customization (Bootstrap 5.3 / vartheme_bs5 layouts, component choices, demo Figma file), and wires Context Control Center (ai_context). The Drupal Canvas AI Orchestrator is taught to RESOLVE a design against what the site already ships before it builds anything: it is given the inventory and design-resolver tools, plus the AI Context items that tell it to reuse an existing component, pattern, block or view before creating a new one, to bind the design to real prop names, and never to freeze live content into static markup. Everything the resolver reasons with - the content roles, what each signal is worth, the reuse/adapt/create thresholds, and what is never a candidate - lives in varbase_ai_figma.settings, so behaviour is tuned in config rather than in code. After apply, a Varbase site builds Canvas pages from a Figma link out of the box.'
+description: 'Base recipe for Varbase AI Figma. Applies the Drupal CMS AI recipe first (AI providers and API keys) and Varbase AI Context, then installs the general ai_figma engine and the Varbase AI Figma customization (Bootstrap 5.3 / vartheme_bs5 layouts, component choices, demo Figma file), and wires Context Control Center (ai_context). At install it asks for a Figma access token and a default Figma file key, so a Varbase site builds Canvas pages from a Figma link out of the box. The Drupal Canvas AI Orchestrator is taught to RESOLVE a design against what the site already ships before it builds anything: it is given the inventory and design-resolver tools, plus the AI Context items that tell it to reuse an existing component, pattern, block or view before creating a new one, to bind the design to real prop names, and never to freeze live content into static markup. Everything the resolver reasons with - the content roles, what each signal is worth, the reuse/adapt/create thresholds, and what is never a candidate - lives in varbase_ai_figma.settings, so behaviour is tuned in config rather than in code.'
 recipes:
-  - varbase_ai_base
+  # Drupal CMS AI is applied first (AI providers and API keys - this recipe
+  # never creates its own OpenAI/Anthropic keys; leave the API key fields
+  # empty at install when the providers are already configured and nothing is
+  # overwritten), then Varbase AI Context (Context Control Center + the
+  # Varbase starter context items).
+  - drupal_cms_ai
+  - varbase_ai_context
+input:
+  figma_access_token:
+    data_type: string
+    description: 'The Figma personal access token used to read designs.'
+    prompt:
+      method: ask
+      arguments:
+        question: 'Enter your Figma personal access token (leave empty to configure it later):'
+    form:
+      '#type': 'textfield'
+      '#title': 'Figma access token'
+      '#description': 'A Figma personal access token with read access (starts with "figd_"). Stored in the "drupal-varbase-figma-token" key. Leave empty to configure it later at /admin/config/system/keys.'
+      '#required': false
+      '#maxlength': 255
+    default:
+      source: env
+      env: FIGMA_ACCESS_TOKEN
+      fallback: ''
+  figma_file_key:
+    data_type: string
+    description: 'The default Figma file key designs are read from.'
+    prompt:
+      method: ask
+      arguments:
+        question: 'Enter the default Figma file key (the hash in figma.com/design/<FILE_KEY>/...):'
+    form:
+      '#type': 'textfield'
+      '#title': 'Default Figma file key'
+      '#description': 'The file key from your Figma file URL: figma.com/design/&lt;FILE_KEY&gt;/&hellip;. Used when a prompt does not include a Figma link.'
+      '#required': false
+      '#maxlength': 128
+    default:
+      source: env
+      env: FIGMA_FILE_KEY
+      fallback: ''
 install:
   - ai
   - ai_agents
@@ -28,6 +69,29 @@ config:
     # opinion and live in this recipe's config/ directory.
     ai_agent_modes: '*'
   actions:
+    # Store the Figma access token in a dedicated Key entity and point
+    # ai_figma at it, together with the default Figma file key, so the
+    # Figma-to-Canvas flow works out of the box right after apply. When the
+    # token input is left empty the key is still created, ready to be filled
+    # at /admin/config/system/keys.
+    key.key.drupal-varbase-figma-token:
+      createIfNotExists:
+        id: drupal-varbase-figma-token
+        label: 'Figma access token'
+        description: 'Figma personal access token used by AI Figma to read designs.'
+        key_type: authentication
+        key_type_settings: {  }
+        key_provider: config
+        key_provider_settings:
+          key_value: ${figma_access_token}
+          base64_encoded: false
+        key_input: text_field
+        key_input_settings: {  }
+    ai_figma.settings:
+      simpleConfigUpdate:
+        figma_token_source: key
+        figma_token_key: drupal-varbase-figma-token
+        default_file_key: ${figma_file_key}
     # Let somebody other than user 1 actually use this.
     #
     # None of these permissions were granted to any role, so on a real site the

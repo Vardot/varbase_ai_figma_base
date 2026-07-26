@@ -16,10 +16,10 @@ tell it to reuse an existing component, pattern, block or view before creating
 a new one, to bind the design to real prop names, and never to freeze live
 content into static markup.
 
-Everything the resolver reasons with — the content roles, what each signal is
-worth, the reuse/adapt/create thresholds, and what is never a candidate —
-lives in `varbase_ai_figma.settings`, so behaviour is tuned in config rather
-than in code. See
+Everything the resolver reasons with (the content roles, what each signal is
+worth, the reuse/adapt/create thresholds, and what is never a candidate) lives
+in `varbase_ai_figma.settings`, so behaviour is tuned in config rather than in
+code. See
 [Varbase AI Figma's configuration docs](https://project.pages.drupalcode.org/varbase_ai_figma/configuration/).
 
 After apply, a Varbase site builds Canvas pages from a Figma link out of the
@@ -27,6 +27,6 @@ box.
 
 ## Next steps
 
-- [Installation](installation.md) — apply the recipe.
-- [Configuration](configuration.md) — what the recipe grants and wires, and
+- [Installation](installation.md): apply the recipe.
+- [Configuration](configuration.md): what the recipe grants and wires, and
   how to re-apply it after a customisation.
