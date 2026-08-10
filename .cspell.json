@@ -86,7 +86,7 @@
     "webforms",
     "webmaster",
     "webshare",
-    "webship"
+    "varbase-e2e"
   ],
   "ignoreRegExpList": [
     "/[A-Za-z0-9+/]{40,}={0,2}/"

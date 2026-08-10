@@ -10,11 +10,11 @@
 #   - composer validate + PHPCS (lints the recipe's YAML) + cspell come from the
 #     template. This is a config-only recipe (no PHP source), so PHPStan/PHPUnit
 #     are skipped - there is nothing to analyse.
-#   - ESLint on the custom webship-js step definitions (the GitHub
+#   - ESLint on the custom varbase-e2e step definitions (the GitHub
 #     "ESLint (step definitions)" job).
-#   - The webship-js (Playwright + Cucumber) BDD acceptance suite on Varbase 11:
+#   - The varbase-e2e (Playwright + Cucumber) BDD acceptance suite on Varbase 11:
 #     build a Varbase site, apply this recipe with `drush recipe`, then run the
-#     tests/ suite - mirroring the single Varbase leg of the GitHub "webship"
+#     tests/ suite - mirroring the single Varbase leg of the GitHub "varbase-e2e"
 #     job.
 #   - The amazee.ai live-agent (@ai) lane. Uses amazee.ai's free anonymous
 #     trial (ensureAmazeeAiAccess) via a testing-only recipe
@@ -38,7 +38,7 @@ variables:
   OPT_IN_TEST_NEXT_MAJOR: 1
   OPT_IN_TEST_MAX_PHP: 1
   # Config-only recipe: no PHP source to analyse, and the only JS lives in the
-  # webship-js suite under tests/ (linted by the ESLint job below).
+  # varbase-e2e suite under tests/ (linted by the ESLint job below).
   SKIP_ESLINT: 1
   SKIP_STYLELINT: 1
   SKIP_PHPSTAN: 1
@@ -51,7 +51,7 @@ phpcs:
 cspell:
   allow_failure: false
 
-# ─── ESLint on the webship-js step definitions ────────────────────────────────
+# ─── ESLint on the varbase-e2e step definitions ────────────────────────────────
 # Reproduces the GitHub "ESLint (step definitions)" job: eslint 8 +
 # eslint-config-prettier 8 against tests/step-definitions, using the project's
 # own .eslintrc.json (Node / Cucumber globals).
@@ -69,9 +69,9 @@ cspell:
     - npm install --no-save eslint@8 eslint-config-prettier@8
     - node ./node_modules/eslint/bin/eslint.js tests/step-definitions
 
-# ─── webship-js (Playwright + Cucumber) BDD acceptance suite ──────────────────
+# ─── varbase-e2e (Playwright + Cucumber) BDD acceptance suite ──────────────────
 # Build a Varbase 11 site, apply THIS recipe, serve it with Apache against the
-# template's MySQL service, and run the tests/ webship-js suite. The default
+# template's MySQL service, and run the tests/ varbase-e2e suite. The default
 # `yarn test` lane excludes @canvas-editor and @demo (see cucumber.js), so it is
 # an always-green functional lane with no live LLM provider key required.
 'functional-testing (Varbase)':
@@ -108,7 +108,7 @@ cspell:
       - tests/videos
     expire_in: 1 week
   before_script:
-    # Node 22 + Playwright (yarn 4 needs the node-modules linker; webship-js's
+    # Node 22 + Playwright (yarn 4 needs the node-modules linker; varbase-e2e's
     # postinstall can clobber cucumber.js, so back it up around yarn install).
     - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
     - apt-get install -y nodejs
@@ -203,7 +203,7 @@ cspell:
       - tests/videos
     expire_in: 1 week
   before_script:
-    # Node 22 + Playwright (yarn 4 needs the node-modules linker; webship-js's
+    # Node 22 + Playwright (yarn 4 needs the node-modules linker; varbase-e2e's
     # postinstall can clobber cucumber.js, so back it up around yarn install).
     - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
     - apt-get install -y nodejs
