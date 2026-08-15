@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc1] - 2026-08-15
+### Changed
+- Pin the `drupal/ai_agent_modes` to `~1.0.0`, `drupal/ai_figma` to `~1.0.0`, `drupal/varbase_ai_context` to `~1.0.0`, `drupal/varbase_ai_figma` to `~1.0.0` dependencies for the release.
+- Update the version badge to `1.0.0-rc1` in `README.md`.
+
 ## [1.0.0-alpha2] - 2026-07-26
 ### Added
 - Ask for the Figma access token and the default Figma file key at install (recipe input prompts), and apply the Drupal CMS AI and Varbase AI Context recipes first.
@@ -15,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of the Varbase AI Figma Base recipe: applies Varbase AI Base, installs `ai_figma` + `varbase_ai_figma` + Context Control Center (`ai_context`) + `ai_agent_modes`, wires the Canvas AI Orchestrator's tool list, and grants Figma/Canvas AI permissions to the Site Admin, Content Admin, and Content Editor roles instead of leaving them admin-only.
 
-[Unreleased]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.0-alpha2...1.0.x
+[Unreleased]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.0-rc1...1.0.x
+[1.0.0-rc1]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.0-alpha2...1.0.0-rc1
 [1.0.0-alpha2]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.0-alpha1...1.0.0-alpha2
 [1.0.0-alpha1]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/tags/1.0.0-alpha1
