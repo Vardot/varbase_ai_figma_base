@@ -134,7 +134,17 @@ cspell:
     # -> drupal/recaptcha) needs PHP >=8.4, newer than this image's PHP.
     # --ignore-platform-req=ext-pgsql - ai_provider_amazeeio pulls an optional
     # pgsql backend not needed for these tests.
-    - composer require "drupal/varbase_ai_figma_base:*@dev" drupal/modeler_api vardot/varbase-patches:~11.0.0 drush/drush:^13 "google/recaptcha:<1.5" --with-all-dependencies --no-interaction --no-progress --ignore-platform-req=ext-pgsql
+    # drupal/easy_breadcrumb:^2.0.10 - varbase_project ships a composer.lock, so
+    # this is a PARTIAL update: only the closure of the packages named here moves.
+    # drupal/trash moved 3.0.32 -> 3.0.33 (2026-08-28), which added
+    # Drupal\trash\Menu\TrashMenuLinkManager decorating plugin.manager.menu.link,
+    # while easy_breadcrumb stayed at the locked 2.0.9, whose
+    # EasyBreadcrumbBuilder::__construct() type-hints the CONCRETE
+    # Drupal\Core\Menu\MenuLinkManager - a TypeError that kills drush site:install.
+    # easy_breadcrumb 2.0.10 (2026-08-28) is the upstream fix: it type-hints
+    # MenuLinkManagerInterface instead - https://www.drupal.org/i/3508330
+    # Naming it here just brings that released fix into the update allowlist.
+    - composer require "drupal/varbase_ai_figma_base:*@dev" drupal/modeler_api vardot/varbase-patches:~11.0.0 drush/drush:^13 "google/recaptcha:<1.5" "drupal/easy_breadcrumb:^2.0.10" --with-all-dependencies --no-interaction --no-progress --ignore-platform-req=ext-pgsql
     # Apache serves the built site against the MySQL service.
     - mkdir -pv $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
     - chmod -R 777 $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
@@ -222,7 +232,17 @@ cspell:
     - composer config repositories.mut '{"type":"path","url":"'"$CI_PROJECT_DIR"'","options":{"symlink":true}}'
     # google/recaptcha:<1.5 needs PHP <8.4; ext-pgsql is an unused optional
     # amazee.ai backend - see the Varbase leg above.
-    - composer require "drupal/varbase_ai_figma_base:*@dev" drupal/modeler_api vardot/varbase-patches:~11.0.0 drush/drush:^13 "google/recaptcha:<1.5" drupal/ai_provider_amazeeio "drupal/ai_simple_provider_installer:*@alpha" --with-all-dependencies --no-interaction --no-progress --ignore-platform-req=ext-pgsql
+    # drupal/easy_breadcrumb:^2.0.10 - varbase_project ships a composer.lock, so
+    # this is a PARTIAL update: only the closure of the packages named here moves.
+    # drupal/trash moved 3.0.32 -> 3.0.33 (2026-08-28), which added
+    # Drupal\trash\Menu\TrashMenuLinkManager decorating plugin.manager.menu.link,
+    # while easy_breadcrumb stayed at the locked 2.0.9, whose
+    # EasyBreadcrumbBuilder::__construct() type-hints the CONCRETE
+    # Drupal\Core\Menu\MenuLinkManager - a TypeError that kills drush site:install.
+    # easy_breadcrumb 2.0.10 (2026-08-28) is the upstream fix: it type-hints
+    # MenuLinkManagerInterface instead - https://www.drupal.org/i/3508330
+    # Naming it here just brings that released fix into the update allowlist.
+    - composer require "drupal/varbase_ai_figma_base:*@dev" drupal/modeler_api vardot/varbase-patches:~11.0.0 drush/drush:^13 "google/recaptcha:<1.5" "drupal/easy_breadcrumb:^2.0.10" drupal/ai_provider_amazeeio "drupal/ai_simple_provider_installer:*@alpha" --with-all-dependencies --no-interaction --no-progress --ignore-platform-req=ext-pgsql
     # Apache serves the built site against the MySQL service.
     - mkdir -pv $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
     - chmod -R 777 $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
