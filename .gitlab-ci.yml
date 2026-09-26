@@ -48,6 +48,13 @@ variables:
 phpcs:
   allow_failure: false
 
+# Temporary (#3625751): Twig 3.30.0 compiles Drupal core's drupal_escape filter
+# into a direct EscaperRuntime::escape() call, so every page render is a fatal
+# TypeError. Keep the CI build below 3.30 until a fixed Twig release is out.
+.composer-base:
+  before_script:
+    - composer require --dev --no-update "twig/twig:<3.30"
+
 cspell:
   allow_failure: false
 
@@ -144,7 +151,7 @@ cspell:
     # easy_breadcrumb 2.0.10 (2026-08-28) is the upstream fix: it type-hints
     # MenuLinkManagerInterface instead - https://www.drupal.org/i/3508330
     # Naming it here just brings that released fix into the update allowlist.
-    - composer require "drupal/varbase_ai_figma_base:*@dev" "drupal/cva:^1.0.1" drupal/modeler_api vardot/varbase-patches:~11.0.0 drush/drush:^13 "google/recaptcha:<1.5" "drupal/easy_breadcrumb:^2.0.10" --with-all-dependencies --no-interaction --no-progress --ignore-platform-req=ext-pgsql
+    - composer require "drupal/varbase_ai_figma_base:*@dev" "drupal/cva:^1.0.1" drupal/modeler_api vardot/varbase-patches:~11.0.0 drush/drush:^13 "twig/twig:<3.30" "google/recaptcha:<1.5" "drupal/easy_breadcrumb:^2.0.10" --with-all-dependencies --no-interaction --no-progress --ignore-platform-req=ext-pgsql
     # Apache serves the built site against the MySQL service.
     - mkdir -pv $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
     - chmod -R 777 $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
@@ -242,7 +249,7 @@ cspell:
     # easy_breadcrumb 2.0.10 (2026-08-28) is the upstream fix: it type-hints
     # MenuLinkManagerInterface instead - https://www.drupal.org/i/3508330
     # Naming it here just brings that released fix into the update allowlist.
-    - composer require "drupal/varbase_ai_figma_base:*@dev" "drupal/cva:^1.0.1" drupal/modeler_api vardot/varbase-patches:~11.0.0 drush/drush:^13 "google/recaptcha:<1.5" "drupal/easy_breadcrumb:^2.0.10" drupal/ai_provider_amazeeio "drupal/ai_simple_provider_installer:*@alpha" --with-all-dependencies --no-interaction --no-progress --ignore-platform-req=ext-pgsql
+    - composer require "drupal/varbase_ai_figma_base:*@dev" "drupal/cva:^1.0.1" drupal/modeler_api vardot/varbase-patches:~11.0.0 drush/drush:^13 "twig/twig:<3.30" "google/recaptcha:<1.5" "drupal/easy_breadcrumb:^2.0.10" drupal/ai_provider_amazeeio "drupal/ai_simple_provider_installer:*@alpha" --with-all-dependencies --no-interaction --no-progress --ignore-platform-req=ext-pgsql
     # Apache serves the built site against the MySQL service.
     - mkdir -pv $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
     - chmod -R 777 $_BUILD_DIR/web/sites/default/files $_BUILD_DIR/web/sites/simpletest
