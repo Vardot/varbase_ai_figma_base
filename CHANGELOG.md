@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-09-26
+### Changed
+- Update `@vardot/varbase-e2e` to 2.0.7, and keep the functional testing suite green by building CI on Twig 3.29 until a Twig release compatible with Drupal core is out. See [#3625751](https://www.drupal.org/i/3625751).
+- Set the recipe version to `1.0.2` and update the version badge in `README.md`.
+
 ## [1.0.1] - 2026-09-08
 ### Changed
 - Take the access-denied step from the Varbase functional testing suite: drop the redundant local step definition now that the shared suite provides it. See [#3621381](https://www.drupal.org/i/3621381).
