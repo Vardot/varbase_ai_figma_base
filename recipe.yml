@@ -20,7 +20,7 @@ input:
     form:
       '#type': 'textfield'
       '#title': 'Figma access token'
-      '#description': 'A Figma personal access token with read access (starts with "figd_"). Stored in the "drupal-varbase-figma-token" key. Leave empty to configure it later at /admin/config/system/keys.'
+      '#description': 'A Figma personal access token with read access (starts with "figd_"). Stored in the "drupal_varbase_figma_token" key. Leave empty to configure it later at /admin/config/system/keys.'
       '#required': false
       '#maxlength': 255
     default:
@@ -74,9 +74,9 @@ config:
     # Figma-to-Canvas flow works out of the box right after apply. When the
     # token input is left empty the key is still created, ready to be filled
     # at /admin/config/system/keys.
-    key.key.drupal-varbase-figma-token:
+    key.key.drupal_varbase_figma_token:
       createIfNotExists:
-        id: drupal-varbase-figma-token
+        id: drupal_varbase_figma_token
         label: 'Figma access token'
         description: 'Figma personal access token used by AI Figma to read designs.'
         key_type: authentication
@@ -90,7 +90,7 @@ config:
     ai_figma.settings:
       simpleConfigUpdate:
         figma_token_source: key
-        figma_token_key: drupal-varbase-figma-token
+        figma_token_key: drupal_varbase_figma_token
         default_file_key: ${figma_file_key}
     # Let somebody other than user 1 actually use this.
     #

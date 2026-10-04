@@ -19,7 +19,7 @@ At install the recipe asks for:
 - the **AI provider** and its API key (from Drupal CMS AI; leave the key
   fields empty when the providers are already configured and nothing is
   overwritten),
-- your **Figma access token** (stored in the `drupal-varbase-figma-token`
+- your **Figma access token** (stored in the `drupal_varbase_figma_token`
   key), and
 - the **default Figma file key** used when a prompt has no Figma link.
 
