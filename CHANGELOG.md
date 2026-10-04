@@ -12,8 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use the machine name `drupal_varbase_figma_token`, with underscores, as the id of the Figma token key the recipe creates, instead of `drupal-varbase-figma-token`. The id is used for the key, the `key.key` config action and `ai_figma.settings` `figma_token_key`. See [#3628387](https://www.drupal.org/i/3628387).
 - Set the recipe version to `1.0.3` and update the version badge in `README.md`.
 
-### Known limitation
-- This release only renames the key id. It does not reuse or migrate a key an earlier version created (the hyphenated `drupal-varbase-figma-token`, or `ai_figma`'s own default `figma`). A site that applied 1.0.2 and applies 1.0.3 keeps the old key and gets a second key with the new id. The key still uses the plain-config key provider.
+### Known limitations
+- This release only renames the key id. It does not remove the duplicate key described in [#3628387](https://www.drupal.org/i/3628387). Checked on a throwaway site: after a fresh apply the site still has two Figma token keys, an empty `figma` key that the `ai_figma` module creates when it is installed, and the recipe's `drupal_varbase_figma_token` key, which holds the token and is the key `ai_figma.settings` points at. Applying the recipe again does not add more keys.
+- A key created by an earlier version is not reused or migrated. A site that applied 1.0.2 and applies 1.0.3 also keeps the old `drupal-varbase-figma-token` key, so it ends with three Figma token keys.
+- The key still uses the plain-config key provider.
+- Reusing the `figma` key instead of creating a second key is a separate follow-up change.
 
 ## [1.0.2] - 2026-09-26
 ### Changed
