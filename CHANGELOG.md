@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-10-11
+### Changed
+- Remove the temporary CI-only `twig/twig:<3.30` pin. Drupal core 11.4.8, 11.3.18 and 10.6.18 fixed the Twig 3.30 render error, so CI builds on the current Twig again. See [#3629804](https://www.drupal.org/i/3629804).
+- Set the recipe version to `1.0.4` and update the version badge in `README.md`.
+
 ## [1.0.3] - 2026-10-04
 ### Changed
 - Use the machine name `drupal_varbase_figma_token`, with underscores, as the id of the Figma token key the recipe creates, instead of `drupal-varbase-figma-token`. The id is used for the key, the `key.key` config action and `ai_figma.settings` `figma_token_key`. See [#3628387](https://www.drupal.org/i/3628387).
@@ -59,7 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of the Varbase AI Figma Base recipe: applies Varbase AI Base, installs `ai_figma` + `varbase_ai_figma` + Context Control Center (`ai_context`) + `ai_agent_modes`, wires the Canvas AI Orchestrator's tool list, and grants Figma/Canvas AI permissions to the Site Admin, Content Admin, and Content Editor roles instead of leaving them admin-only.
 
-[Unreleased]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.3...1.0.x
+[Unreleased]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.4...1.0.x
+[1.0.4]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.3...1.0.4
 [1.0.3]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.2...1.0.3
 [1.0.2]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.1...1.0.2
 [1.0.1]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.0...1.0.1
