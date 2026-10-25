@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Move the documentation to docs.varbase.vardot.com ([#3633022](https://www.drupal.org/i/3633022)).
+
 ## [1.0.5] - 2026-10-24
 ### Added
 - Add the Varbase logo as logo.png ([#3632508](https://www.drupal.org/i/3632508)).
