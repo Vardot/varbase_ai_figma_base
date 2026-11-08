@@ -43,6 +43,9 @@ variables:
   SKIP_STYLELINT: 1
   SKIP_PHPSTAN: 1
   DRUPAL_CMS_TELEMETRY: "0"
+  # No yarn.lock is committed; Yarn 4 defaults to immutable installs on CI and
+  # would refuse to create one.
+  YARN_ENABLE_IMMUTABLE_INSTALLS: "false"
 
 # Blocking quality gates (composer validate was the GitHub job; PHPCS here also
 # lints the recipe YAML).
@@ -52,6 +55,31 @@ phpcs:
 cspell:
   allow_failure: false
 
+.composer-base:
+  variables:
+    # Every composer job, variants included: Drupal core's own Yarn 4.9.1 would
+    # read the project .yarnrc.yml (Yarn >= 4.14 keys) too.
+    YARN_RC_FILENAME: .yarnrc.core.yml
+    YARN_NODE_LINKER: node-modules
+
+# The next minor and next major lanes only resolve when the lenient plugin
+# accepts the dependencies pinned to the current Drupal minor (the Varbase AI
+# recipes ask for ~11.4.0) or not declaring Drupal 12 yet.
+composer (next minor):
+  variables:
+    _LENIENT_ALLOW_LIST: "varbase_ai_context"
+
+composer (next major):
+  variables:
+    # cspell:disable-next-line
+    _LENIENT_ALLOW_LIST: "varbase_ai_figma,varbase_ai_context,ai,ai_agents,ai_agent_modes,ai_context,ai_dashboard,ai_image_alt_text,ai_provider_amazeeio,ai_provider_anthropic,ai_provider_openai,ai_simple_provider_installer,canvas,dashboard,drupal_cms_ai,drupal_cms_content_type_base,drupal_cms_helper,drupal_cms_privacy_basic,easy_encryption,klaro,menu_link_attributes"
+
+stylelint:
+  variables:
+    # Drupal core's own Yarn 4.9.1 would read the project .yarnrc.yml (Yarn >= 4.14 keys) too.
+    YARN_RC_FILENAME: .yarnrc.core.yml
+    YARN_NODE_LINKER: node-modules
+
 # ─── ESLint on the varbase-e2e step definitions ────────────────────────────────
 # Reproduces the GitHub "ESLint (step definitions)" job: eslint 8 +
 # eslint-config-prettier 8 against tests/step-definitions, using the project's
@@ -59,7 +87,7 @@ cspell:
 'eslint (step definitions)':
   stage: validate
   needs: []
-  image: node:22
+  image: node:24
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
@@ -109,9 +137,9 @@ cspell:
       - tests/videos
     expire_in: 1 week
   before_script:
-    # Node 22 + Playwright (yarn 4 needs the node-modules linker; varbase-e2e's
+    # Node 24 + Playwright (yarn 4 needs the node-modules linker; varbase-e2e's
     # postinstall can clobber cucumber.js, so back it up around yarn install).
-    - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+    - curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
     - apt-get install -y nodejs
     - 'test -f .yarnrc.yml || echo "nodeLinker: node-modules" > .yarnrc.yml'
     - cp cucumber.js .cucumber.js.bak
@@ -214,9 +242,9 @@ cspell:
       - tests/videos
     expire_in: 1 week
   before_script:
-    # Node 22 + Playwright (yarn 4 needs the node-modules linker; varbase-e2e's
+    # Node 24 + Playwright (yarn 4 needs the node-modules linker; varbase-e2e's
     # postinstall can clobber cucumber.js, so back it up around yarn install).
-    - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+    - curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
     - apt-get install -y nodejs
     - 'test -f .yarnrc.yml || echo "nodeLinker: node-modules" > .yarnrc.yml'
     - cp cucumber.js .cucumber.js.bak
