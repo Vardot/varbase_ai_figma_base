@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-11-14
+### Changed
+- Update Node.js to `>= 24.0` and Yarn to `4.18.1` in `package.json` and the GitLab CI ([#3635714](https://www.drupal.org/i/3635714)).
+- Update the version badge to `1.0.7` in `README.md`.
+
 ## [1.0.6] - 2026-10-29
 ### Added
 - A Claude Code agent and skill for applying and verifying the recipe ([#3633944](https://www.drupal.org/i/3633944)).
@@ -77,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of the Varbase AI Figma Base recipe: applies Varbase AI Base, installs `ai_figma` + `varbase_ai_figma` + Context Control Center (`ai_context`) + `ai_agent_modes`, wires the Canvas AI Orchestrator's tool list, and grants Figma/Canvas AI permissions to the Site Admin, Content Admin, and Content Editor roles instead of leaving them admin-only.
 
-[Unreleased]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.6...1.0.x
+[Unreleased]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.7...1.0.x
+[1.0.7]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.6...1.0.7
 [1.0.6]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.5...1.0.6
 [1.0.5]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.4...1.0.5
 [1.0.4]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.3...1.0.4
