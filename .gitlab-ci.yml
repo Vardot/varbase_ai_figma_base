@@ -32,6 +32,8 @@ include:
       - '/includes/include.drupalci.workflows.yml'
 
 variables:
+  # PHP 8.5 for the drupalci job images (the template default is PHP 8.3).
+  _TARGET_PHP: "8.5"
   # Test against adjacent core versions too, not just the current one.
   OPT_IN_TEST_PREVIOUS_MINOR: 1
   OPT_IN_TEST_NEXT_MINOR: 1
