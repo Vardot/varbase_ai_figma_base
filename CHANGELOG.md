@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Run the functional tests with `@vardot/varbase-e2e` 2.0.8: require `@cucumber/pretty-formatter` `^1.0.1`, the line Cucumber 12 loads, instead of forcing `^3.3` through `resolutions`, add `@cucumber/cucumber` `^12.9.0`, and update `@vardot/varbase-e2e` to `^2.0.8`. The suite stopped with "@cucumber/pretty-formatter does not export a function/class" ([#3638920](https://git.drupalcode.org/project/varbase_ai_figma_base/-/work_items/3638920)).
 
 ## [1.0.7] - 2026-11-14
 ### Changed
