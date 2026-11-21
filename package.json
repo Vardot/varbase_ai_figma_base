@@ -16,7 +16,7 @@
     "test:webkit": "BROWSER=webkit node ./node_modules/@cucumber/cucumber/bin/cucumber.js --config cucumber.js",
     "test:headed": "HEADLESS=false node ./node_modules/@cucumber/cucumber/bin/cucumber.js --config cucumber.js",
     "lint:js": "node ./node_modules/eslint/bin/eslint.js tests/step-definitions",
-    "generate-reports": "generate-reports"
+    "generate-reports": "node ./node_modules/@vardot/varbase-e2e/bin/generate-reports.js"
   },
   "keywords": [
     "drupal",
@@ -26,13 +26,9 @@
     "ai"
   ],
   "dependencies": {
-    "@vardot/varbase-e2e": "^2.0.8",
-    "@cucumber/cucumber": "^12.9.0"
+    "@vardot/varbase-e2e": "^2.0.8"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.3",
-    "@cucumber/pretty-formatter": "^1.0.1",
-    "axe-core": "^4.11.4",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^8.0.0"
   }
