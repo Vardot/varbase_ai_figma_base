@@ -6,8 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.8] - 2026-11-23
 ### Fixed
 - Run the functional tests with `@vardot/varbase-e2e` 2.0.8: require `@cucumber/pretty-formatter` `^1.0.1`, the line Cucumber 12 loads, instead of forcing `^3.3` through `resolutions`, add `@cucumber/cucumber` `^12.9.0`, and update `@vardot/varbase-e2e` to `^2.0.8`. The suite stopped with "@cucumber/pretty-formatter does not export a function/class" ([#3638920](https://git.drupalcode.org/project/varbase_ai_figma_base/-/work_items/3638920)).
+### Changed
+- Change the default PHP version to PHP 8.5 in the GitLab CI ([#3638919](https://www.drupal.org/i/3638919)).
+- Update the version badge to `1.0.8` in `README.md`.
 
 ## [1.0.7] - 2026-11-14
 ### Changed
@@ -84,7 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of the Varbase AI Figma Base recipe: applies Varbase AI Base, installs `ai_figma` + `varbase_ai_figma` + Context Control Center (`ai_context`) + `ai_agent_modes`, wires the Canvas AI Orchestrator's tool list, and grants Figma/Canvas AI permissions to the Site Admin, Content Admin, and Content Editor roles instead of leaving them admin-only.
 
-[Unreleased]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.7...1.0.x
+[Unreleased]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.8...1.0.x
+[1.0.8]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.7...1.0.8
 [1.0.7]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.6...1.0.7
 [1.0.6]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.5...1.0.6
 [1.0.5]: https://git.drupalcode.org/project/varbase_ai_figma_base/-/compare/1.0.4...1.0.5
